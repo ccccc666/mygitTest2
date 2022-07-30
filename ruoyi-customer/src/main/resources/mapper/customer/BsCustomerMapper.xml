@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.customer.mapper.BsCustomerMapper">
+    
+    <resultMap type="BsCustomer" id="BsCustomerResult">
+        <result property="id"    column="id"    />
+        <result property="ctName"    column="ct_name"    />
+        <result property="ctAddress"    column="ct_address"    />
+        <result property="ctTelephone"    column="ct_telephone"    />
+        <result property="ctVipnumber"    column="ct_vipnumber"    />
+        <result property="ctCredit"    column="ct_credit"    />
+        <result property="ctViplevel"    column="ct_viplevel"    />
+        <result property="addressName" column="typeName"/>
+    </resultMap>
+
+    <resultMap id="DistrictCode" type="dwelling">
+        <result property="code" column="code"/>
+        <result property="name" column="name"/>
+        <result property="level" column="level"/>
+        <result property="type" column="type"/>
+        <result property="abName" column="abname"/>
+        <result property="pid" column="pid"/>
+        <result property="pName" column="pname"/>
+        <result property="note" column="note"/>
+    </resultMap>
+
+    <resultMap type="BsOrder2" id="BsOrderResult">
+        <result property="id"    column="id"    />
+        <result property="bsCtname"    column="bs_ctname"    />
+        <result property="bsCtphone"    column="bs_ctphone"    />
+        <result property="bsPrice"    column="bs_price"    />
+        <result property="bsNumber"    column="bs_number"    />
+        <result property="bsAllprice"    column="bs_allprice"    />
+        <result property="bsTsway"    column="bs_tsway"    />
+        <result property="gsName" column="gsName"/>
+    </resultMap>
+    <sql id="selectBsCustomerVo">
+        select id, ct_name, ct_address, ct_telephone, ct_vipnumber, ct_credit, ct_viplevel from bs_customer
+    </sql>
+
+    <select id="selectBsCustomerList" parameterType="BsCustomer" resultMap="BsCustomerResult">
+<!--        <include refid="selectBsCustomerVo"/>-->
+        select
+        main.*,
+        case when concat(dc1.name, ' ', dc2.name, ' ', dc3.name) is null then concat(dc1.name, ' ', dc2.name)
+        else concat(dc1.name, ' ', dc2.name, ' ', dc3.name) end typeName
+        from (
+        select
+        bc.*,
+        SUBSTRING_INDEX(bc.ct_address, ',', 1) AS type1,
+        SUBSTRING_INDEX( SUBSTRING_INDEX(bc.ct_address, ',', 2) ,',',- 1) AS type2,
+        case when SUBSTRING_INDEX(bc.ct_address, ',' ,-1) = SUBSTRING_INDEX( SUBSTRING_INDEX(bc.ct_address, ',', 2) ,',',- 1) then ''
+        else SUBSTRING_INDEX(bc.ct_address, ',' ,-1)
+        end type3
+        from
+        bs_customer bc) main
+        left join district_code dc1 on main.type1 = dc1.code
+        left join district_code dc2 on main.type2 = dc2.code
+        left join district_code dc3 on main.type3 = dc3.code
+        <where>  
+            <if test="ctName != null  and ctName != ''"> and ct_name like concat('%', #{ctName}, '%')</if>
+            <if test="ctAddress != null  and ctAddress != ''"> and ct_address = #{ctAddress}</if>
+            <if test="ctTelephone != null  and ctTelephone != ''"> and ct_telephone = #{ctTelephone}</if>
+            <if test="ctVipnumber != null  and ctVipnumber != ''"> and ct_vipnumber = #{ctVipnumber}</if>
+            <if test="ctCredit != null "> and ct_credit = #{ctCredit}</if>
+            <if test="ctViplevel != null  and ctViplevel != ''"> and ct_viplevel = #{ctViplevel}</if>
+        </where>
+    </select>
+    
+    <select id="selectBsCustomerById" parameterType="Integer" resultMap="BsCustomerResult">
+        <include refid="selectBsCustomerVo"/>
+        where id = #{id}
+    </select>
+
+    <resultMap id="DwellingTree" type="dwelling" extends="DistrictCode">
+        <collection property="children" ofType="dwelling"
+                    column="code" select="com.ruoyi.customer.mapper.BsCustomerMapper.treeDwelling"/>
+    </resultMap>
+
+    <select id="treeDwelling" resultMap="DwellingTree">
+        select * from district_code where
+        <if test="pid == null">pid is null</if>
+        <if test="pid != null">pid = #{pid}</if>
+    </select>
+
+
+    <select id="selectOrdersById" resultMap="BsOrderResult">
+        select bg2.*,bg1.gs_name gsName
+        from bs_goods bg1
+            right join bs_order bg2
+        on bg2.bs_goodsid=bg1.gs_id
+            left join bs_customer bg3
+            on bg3.id=bg2.bs_customerId
+        where bg3.id= #{id}
+    </select>
+
+    <select id="reNumber" resultType="java.lang.Long">
+        select count(*)
+        from bs_order
+        where bs_customerId=#{id}
+    </select>
+
+
+    <insert id="insertBsCustomer" parameterType="BsCustomer" useGeneratedKeys="true" keyProperty="id">
+        insert into bs_customer
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="ctName != null">ct_name,</if>
+            <if test="ctAddress != null">ct_address,</if>
+            <if test="ctTelephone != null">ct_telephone,</if>
+            <if test="ctVipnumber != null">ct_vipnumber,</if>
+            <if test="ctCredit != null">ct_credit,</if>
+            <if test="ctViplevel != null">ct_viplevel,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="ctName != null">#{ctName},</if>
+            <if test="ctAddress != null">#{ctAddress},</if>
+            <if test="ctTelephone != null">#{ctTelephone},</if>
+            <if test="ctVipnumber != null">#{ctVipnumber},</if>
+            <if test="ctCredit != null">#{ctCredit},</if>
+            <if test="ctViplevel != null">#{ctViplevel},</if>
+         </trim>
+    </insert>
+
+    <update id="updateBsCustomer" parameterType="BsCustomer">
+        update bs_customer
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="ctName != null">ct_name = #{ctName},</if>
+            <if test="ctAddress != null">ct_address = #{ctAddress},</if>
+            <if test="ctTelephone != null">ct_telephone = #{ctTelephone},</if>
+            <if test="ctVipnumber != null">ct_vipnumber = #{ctVipnumber},</if>
+            <if test="ctCredit != null">ct_credit = #{ctCredit},</if>
+            <if test="ctViplevel != null">ct_viplevel = #{ctViplevel},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteBsCustomerById" parameterType="Integer">
+        delete from bs_customer where id = #{id}
+    </delete>
+
+    <delete id="deleteBsCustomerByIds" parameterType="String">
+        delete from bs_customer where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

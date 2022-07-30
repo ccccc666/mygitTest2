@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.order.mapper.BsOrderMapper">
+    
+    <resultMap type="BsOrder" id="BsOrderResult">
+        <result property="id"    column="id"    />
+        <result property="bsCtname"    column="bs_ctname"    />
+        <result property="bsCtphone"    column="bs_ctphone"    />
+        <result property="bsPrice"    column="bs_price"    />
+        <result property="bsNumber"    column="bs_number"    />
+        <result property="bsAllprice"    column="bs_allprice"    />
+        <result property="bsTsway"    column="bs_tsway"    />
+        <result property="bsCustomerid"    column="bs_customerId"    />
+        <result property="bsGoodsid" column="bs_goodsid"/>
+        <result property="bsGoodsStates" column="bs_goodsstates"/>
+        <result property="bsSentStates" column="bs_gssentstates"/>
+        <result property="goodsName" column="gsName"/>
+    </resultMap>
+
+    <sql id="selectBsOrderVo">
+        select id, bs_ctname, bs_ctphone, bs_price, bs_number, bs_allprice, bs_tsway, bs_customerId ,bs_goodsstates,bs_gssentstates from bs_order
+    </sql>
+
+    <select id="selectBsOrderList" parameterType="BsOrder" resultMap="BsOrderResult">
+        select bg2.*,bg1.gs_name gsName
+        from bs_goods bg1
+        right join bs_order bg2
+        on bg2.bs_goodsid=bg1.gs_id
+        <where>  
+            <if test="bsCtname != null  and bsCtname != ''"> and bs_ctname like concat('%', #{bsCtname}, '%')</if>
+            <if test="bsCtphone != null  and bsCtphone != ''"> and bs_ctphone = #{bsCtphone}</if>
+            <if test="bsPrice != null "> and bs_price = #{bsPrice}</if>
+            <if test="bsNumber != null "> and bs_number = #{bsNumber}</if>
+            <if test="bsAllprice != null "> and bs_allprice = #{bsAllprice}</if>
+            <if test="bsTsway != null  and bsTsway != ''"> and bs_tsway = #{bsTsway}</if>
+            <if test="bsCustomerid != null "> and bs_customerId = #{bsCustomerid}</if>
+            <if test="bsAuthentication != null and bsAuthentication != '' and bsAuthentication != 'admin'">
+                and bs_authentication = #{bsAuthentication}
+            </if>
+            <if test="bsGoodsStates !=null">and bs_goodsstates =#{bsGoodsStates}</if>
+            <if test="bsSentStates !=null">and bs_gssentstates=#{bsSentStates}</if>
+            <if test="goodsName !=null">and gsName=#{goodsName}</if>
+        </where>
+    </select>
+    
+    <select id="selectBsOrderById" parameterType="Long" resultMap="BsOrderResult">
+        <include refid="selectBsOrderVo"/>
+        where id = #{id}
+    </select>
+    <select id="reGoodsNumberById" resultType="java.lang.Integer">
+        select gs_gsnumber from bs_goods where gs_id=#{id}
+    </select>
+    <select id="reBsOrderById" resultType="com.ruoyi.order.domain.BsOrder">
+        select * from bs_order where id=#{id}
+    </select>
+
+    <select id="reGoodsId" resultType="java.lang.Integer">
+         select gs_id from bs_goods where gs_id=#{id}
+    </select>
+
+
+    <insert id="insertBsOrder" parameterType="BsOrder" useGeneratedKeys="true" keyProperty="id">
+        insert into bs_order
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="bsCtname != null">bs_ctname,</if>
+            <if test="bsCtphone != null">bs_ctphone,</if>
+            <if test="bsPrice != null">bs_price,</if>
+            <if test="bsNumber != null">bs_number,</if>
+            <if test="bsAllprice != null">bs_allprice,</if>
+            <if test="bsTsway != null">bs_tsway,</if>
+            <if test="bsCustomerid != null">bs_customerId,</if>
+            <if test="bsAuthentication != null">bs_authentication,</if>
+            <if test="bsGoodsid != null">bs_goodsid,</if>
+            <if test="bsGoodsStates !=null">bs_goodsstates,</if>
+            <if test="bsSentStates != null">bs_gssentstates</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="bsCtname != null">#{bsCtname},</if>
+            <if test="bsCtphone != null">#{bsCtphone},</if>
+            <if test="bsPrice != null">#{bsPrice},</if>
+            <if test="bsNumber != null">#{bsNumber},</if>
+            <if test="bsAllprice != null">#{bsAllprice},</if>
+            <if test="bsTsway != null">#{bsTsway},</if>
+            <if test="bsCustomerid != null">#{bsCustomerid},</if>
+            <if test="bsAuthentication != null">#{bsAuthentication},</if>
+            <if test="bsGoodsid != null">#{bsGoodsid},</if>
+            <if test="bsGoodsStates != null">#{bsGoodsStates},</if>
+            <if test="bsSentStates != null">#{bsSentStates}</if>
+         </trim>
+    </insert>
+
+    <update id="updateBsOrder" parameterType="BsOrder">
+        update bs_order
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="bsCtname != null">bs_ctname = #{bsCtname},</if>
+            <if test="bsCtphone != null">bs_ctphone = #{bsCtphone},</if>
+            <if test="bsPrice != null">bs_price = #{bsPrice},</if>
+            <if test="bsNumber != null">bs_number = #{bsNumber},</if>
+            <if test="bsAllprice != null">bs_allprice = #{bsAllprice},</if>
+            <if test="bsTsway != null">bs_tsway = #{bsTsway},</if>
+            <if test="bsCustomerid != null">bs_customerId = #{bsCustomerid},</if>
+            <if test="bsGoodsStates !=null">bs_goodsstates =#{bsGoodsStates},</if>
+            <if test="bsSentStates !=null">bs_gssentstates=#{bsSentStates}</if>
+        </trim>
+        where id = #{id}
+    </update>
+    <update id="updateKuCun">
+        update bs_goods
+        set gs_gsnumber=#{number}
+        where gs_id=#{id}
+    </update>
+    <update id="updateKuCun2">
+        update bs_goods
+        set gs_gsnumber=gs_gsnumber+#{number}
+        where gs_id=#{id}
+    </update>
+    <delete id="deleteBsOrderById" parameterType="Long">
+        delete from bs_order where id = #{id}
+    </delete>
+
+    <delete id="deleteBsOrderByIds" parameterType="String">
+        delete from bs_order where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+    <delete id="deleteBsOrderByIds2" parameterType="String">
+        delete from bs_order where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

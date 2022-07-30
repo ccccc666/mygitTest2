@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.goods.mapper.BsGoodsMapper">
+    
+    <resultMap type="BsGoods" id="BsGoodsResult">
+        <result property="gsId"    column="gs_id"    />
+        <result property="gsName"    column="gs_name"    />
+        <result property="gsGsidnumber"    column="gs_gsidnumber"    />
+        <result property="gsBrand"    column="gs_brand"    />
+        <result property="gsSgprice"    column="gs_sgprice"    />
+        <result property="gsGsnumber"    column="gs_gsnumber"    />
+        <result property="gsIfsupport"    column="gs_ifsupport"    />
+        <result property="gsCyid1"    column="gs_cyid1"    />
+        <result property="gsCyid2"    column="gs_cyid2"    />
+        <result property="gsCyid3"    column="gs_cyid3"    />
+        <result property="cfname1" column="cfname1" />
+        <result property="cfname2" column="cfname2" />
+        <result property="cfname3" column="cfname3" />
+    </resultMap>
+
+    <sql id="selectBsGoodsVo">
+        select
+               gs_id, gs_name, gs_gsidnumber, gs_brand, gs_sgprice, gs_gsnumber, gs_ifsupport, gs_cyid1, gs_cyid2, gs_cyid3 from bs_goods
+    </sql>
+
+
+    <select id="selectBsGoodsList" parameterType="BsGoods" resultMap="BsGoodsResult">
+        select bg.*,
+        bc1.cf_name cfname1,
+        bc2.cf_name cfname2,
+        bc3.cf_name cfname3
+        from bs_goods bg
+        left join bs_classify bc1 on bc1.id = bg.gs_cyid1
+        left join bs_classify bc2 on bc2.id = bg.gs_cyid2
+        left join bs_classify bc3 on bc3.id = bg.gs_cyid3
+        <where>  
+            <if test="gsName != null  and gsName != ''"> and gs_name like concat('%', #{gsName}, '%')</if>
+            <if test="gsGsidnumber != null  and gsGsidnumber != ''"> and gs_gsidnumber = #{gsGsidnumber}</if>
+            <if test="gsBrand != null "> and gs_brand = #{gsBrand}</if>
+            <if test="gsSgprice != null "> and gs_sgprice = #{gsSgprice}</if>
+            <if test="gsGsnumber != null "> and gs_gsnumber = #{gsGsnumber}</if>
+            <if test="gsIfsupport != null  and gsIfsupport != ''"> and gs_ifsupport = #{gsIfsupport}</if>
+            <if test="gsCyid1 != null "> and gs_cyid1 = #{gsCyid1}</if>
+            <if test="gsCyid2 != null "> and gs_cyid2 = #{gsCyid2}</if>
+            <if test="gsCyid3 != null "> and gs_cyid3 = #{gsCyid3}</if>
+        </where>
+    </select>
+    
+    <select id="selectBsGoodsByGsId" parameterType="Integer" resultMap="BsGoodsResult">
+        <include refid="selectBsGoodsVo"/>
+        where gs_id = #{gsId}
+    </select>
+    <select id="selectAllNameById" resultType="com.ruoyi.classify.domain.BsClassify">
+        select * from bs_classify where  id=#{gsCyid1} or id=#{gsCyid2} or id=#{gsCyid3}
+    </select>
+    <select id="reNumber" resultType="java.lang.Long">
+        select count(*)
+        from bs_order
+        where bs_goodsid=#{id}
+    </select>
+
+
+    <insert id="insertBsGoods" parameterType="BsGoods" useGeneratedKeys="true" keyProperty="gsId">
+        insert into bs_goods
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="gsName != null">gs_name,</if>
+            <if test="gsGsidnumber != null">gs_gsidnumber,</if>
+            <if test="gsBrand != null">gs_brand,</if>
+            <if test="gsSgprice != null">gs_sgprice,</if>
+            <if test="gsGsnumber != null">gs_gsnumber,</if>
+            <if test="gsIfsupport != null">gs_ifsupport,</if>
+            <if test="gsCyid1 != null">gs_cyid1,</if>
+            <if test="gsCyid2 != null">gs_cyid2,</if>
+            <if test="gsCyid3 != null">gs_cyid3,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="gsName != null">#{gsName},</if>
+            <if test="gsGsidnumber != null">#{gsGsidnumber},</if>
+            <if test="gsBrand != null">#{gsBrand},</if>
+            <if test="gsSgprice != null">#{gsSgprice},</if>
+            <if test="gsGsnumber != null">#{gsGsnumber},</if>
+            <if test="gsIfsupport != null">#{gsIfsupport},</if>
+            <if test="gsCyid1 != null">#{gsCyid1},</if>
+            <if test="gsCyid2 != null">#{gsCyid2},</if>
+            <if test="gsCyid3 != null">#{gsCyid3},</if>
+         </trim>
+    </insert>
+
+    <update id="updateBsGoods" parameterType="BsGoods">
+        update bs_goods
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="gsName != null">gs_name = #{gsName},</if>
+            <if test="gsGsidnumber != null">gs_gsidnumber = #{gsGsidnumber},</if>
+            <if test="gsBrand != null">gs_brand = #{gsBrand},</if>
+            <if test="gsSgprice != null">gs_sgprice = #{gsSgprice},</if>
+            <if test="gsGsnumber != null">gs_gsnumber = #{gsGsnumber},</if>
+            <if test="gsIfsupport != null">gs_ifsupport = #{gsIfsupport},</if>
+            <if test="gsCyid1 != null">gs_cyid1 = #{gsCyid1},</if>
+            <if test="gsCyid2 != null">gs_cyid2 = #{gsCyid2},</if>
+            <if test="gsCyid3 != null">gs_cyid3 = #{gsCyid3},</if>
+        </trim>
+        where gs_id = #{gsId}
+    </update>
+
+    <delete id="deleteBsGoodsByGsId" parameterType="Integer">
+        delete from bs_goods where gs_id = #{gsId}
+    </delete>
+
+    <delete id="deleteBsGoodsByGsIds" parameterType="String">
+        delete from bs_goods where gs_id in 
+        <foreach item="gsId" collection="array" open="(" separator="," close=")">
+            #{gsId}
+        </foreach>
+    </delete>
+</mapper>

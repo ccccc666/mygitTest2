@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.brand.mapper.BsBrandMapper">
+    
+    <resultMap type="BsBrand" id="BsBrandResult">
+        <result property="brId"    column="br_id"    />
+        <result property="brName"    column="br_name"    />
+        <result property="brType"    column="br_type"    />
+    </resultMap>
+
+    <sql id="selectBsBrandVo">
+        select br_id, br_name, br_type from bs_brand
+    </sql>
+
+    <select id="selectBsBrandList" parameterType="BsBrand" resultMap="BsBrandResult">
+        <include refid="selectBsBrandVo"/>
+        <where>  
+            <if test="brName != null  and brName != ''"> and br_name like concat('%', #{brName}, '%')</if>
+            <if test="brType != null "> and br_type = #{brType}</if>
+        </where>
+    </select>
+    
+    <select id="selectBsBrandByBrId" parameterType="Integer" resultMap="BsBrandResult">
+        <include refid="selectBsBrandVo"/>
+        where br_id = #{brId}
+    </select>
+    <select id="reNumber" resultType="java.lang.Long">
+        select count(*) from bs_goods
+        where gs_brand=#{BrandId}
+    </select>
+
+
+    <insert id="insertBsBrand" parameterType="BsBrand" useGeneratedKeys="true" keyProperty="brId">
+        insert into bs_brand
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="brName != null">br_name,</if>
+            <if test="brType != null">br_type,</if>
+         </trim>
+            /*prifix 是构造sql语句最前面 suffix是构造sql语句最后面，suffixOverrides是去除匹配之后剩下来到最后那个的逗号*/
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="brName != null">#{brName},</if>
+            <if test="brType != null">#{brType},</if>
+         </trim>
+    </insert>
+
+    <insert id="addArandToData" parameterType="SysDictData">
+        insert into sys_dict_data(
+        <if test="dictSort != null">dict_sort,</if>
+        <if test="dictLabel != null and dictLabel != ''">dict_label,</if>
+        <if test="dictValue != null and dictValue != ''">dict_value,</if>
+        <if test="dictType != null and dictType != ''">dict_type,</if>
+        <if test="cssClass != null and cssClass != ''">css_class,</if>
+        <if test="listClass != null and listClass != ''">list_class,</if>
+        <if test="isDefault != null and isDefault != ''">is_default,</if>
+        <if test="status != null">status,</if>
+        <if test="remark != null and remark != ''">remark,</if>
+        <if test="createBy != null and createBy != ''">create_by,</if>
+        create_time
+        )values(
+        <if test="dictSort != null">#{dictSort},</if>
+        <if test="dictLabel != null and dictLabel != ''">#{dictLabel},</if>
+        <if test="dictValue != null and dictValue != ''">#{dictValue},</if>
+        <if test="dictType != null and dictType != ''">#{dictType},</if>
+        <if test="cssClass != null and cssClass != ''">#{cssClass},</if>
+        <if test="listClass != null and listClass != ''">#{listClass},</if>
+        <if test="isDefault != null and isDefault != ''">#{isDefault},</if>
+        <if test="status != null">#{status},</if>
+        <if test="remark != null and remark != ''">#{remark},</if>
+        <if test="createBy != null and createBy != ''">#{createBy},</if>
+        sysdate()
+        )
+    </insert>
+
+    <update id="updateBsBrand" parameterType="BsBrand">
+        update bs_brand
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="brName != null">br_name = #{brName},</if>
+            <if test="brType != null">br_type = #{brType},</if>
+        </trim>
+        where br_id = #{brId}
+    </update>
+
+    <delete id="deleteBsBrandByBrId" parameterType="Integer">
+        delete from bs_brand where br_id = #{brId};
+    </delete>
+
+
+    <delete id="delDict" parameterType="String">
+        delete from sys_dict_data where dict_value = #{dictValue}
+    </delete>
+
+</mapper>

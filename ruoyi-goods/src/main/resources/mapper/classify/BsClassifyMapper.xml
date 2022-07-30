@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.classify.mapper.BsClassifyMapper">
+    
+    <resultMap type="BsClassify" id="BsClassifyResult">
+        <result property="id"    column="id"    />
+        <result property="cfName"    column="cf_name"    />
+        <result property="cfLevel"    column="cf_level"    />
+        <result property="cfParentid"    column="cf_parentId"    />
+    </resultMap>
+
+    <sql id="selectBsClassifyVo">
+        select id, cf_name, cf_level, cf_parentId from bs_classify
+    </sql>
+
+    <select id="selectBsClassifyList" parameterType="BsClassify" resultMap="BsClassifyResult">
+        <include refid="selectBsClassifyVo"/>
+        <where>  
+            <if test="cfName != null  and cfName != ''"> and cf_name like concat('%', #{cfName}, '%')</if>
+            <if test="cfLevel != null "> and cf_level = #{cfLevel}</if>
+            <if test="cfParentid != null "> and cf_parentId = #{cfParentid}</if>
+        </where>
+    </select>
+    
+    <select id="selectBsClassifyById" parameterType="Integer" resultMap="BsClassifyResult">
+        <include refid="selectBsClassifyVo"/>
+        where id = #{id}
+    </select>
+
+    <resultMap id="classifyTree" type="BsClassify" extends="BsClassifyResult">
+        <collection property="children" ofType="BsClassify"
+                    column="id" select="com.ruoyi.classify.mapper.BsClassifyMapper.treeClassify"/>
+    </resultMap>
+    <select id="treeClassify" resultMap="classifyTree">
+        select * from bs_classify where
+         <if test="cfParentid == null">cf_parentid is null</if>
+         <if test="cfParentid != null">cf_parentId = #{cfParentid}</if>
+    </select>
+
+
+    <select id="reNumber" resultType="java.lang.Long">
+        select count(*)
+        from bs_goods
+        where gs_cyid1=#{id} or gs_cyid2=#{id} or gs_cyid3=#{id}
+    </select>
+
+    <insert id="insertBsClassify" parameterType="BsClassify" useGeneratedKeys="true" keyProperty="id">
+        insert into bs_classify
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="cfName != null">cf_name,</if>
+            <if test="cfLevel != null">cf_level,</if>
+            <if test="cfParentid != null">cf_parentId,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="cfName != null">#{cfName},</if>
+            <if test="cfLevel != null">#{cfLevel},</if>
+            <if test="cfParentid != null">#{cfParentid},</if>
+         </trim>
+    </insert>
+
+    <update id="updateBsClassify" parameterType="BsClassify">
+        update bs_classify
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="cfName != null">cf_name = #{cfName},</if>
+            <if test="cfLevel != null">cf_level = #{cfLevel},</if>
+            <if test="cfParentid != null">cf_parentId = #{cfParentid},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteBsClassifyById" parameterType="Integer">
+        delete from bs_classify where id = #{id}
+    </delete>
+
+    <delete id="deleteBsClassifyByIds" parameterType="String">
+        delete from bs_classify where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>
